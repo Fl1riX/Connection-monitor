@@ -1,5 +1,3 @@
-Here's a well-formatted `README.md` in English with some special characters for better readability:
-
 ---
 
 # 💻 **Connection Monitor** 🔍
