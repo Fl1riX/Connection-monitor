@@ -12,7 +12,7 @@ class Main_win:
         self.win = tk.Tk()
         self.win.title("Connection Monitor")
         self.win.geometry("800x500+230+200")
-        self.win.resizable(1, 1)
+        self.win.resizable(0, 0)
 
         self.frame = tk.Frame(self.win)
         self.frame.grid(row=0, column=0, sticky="nsew")
