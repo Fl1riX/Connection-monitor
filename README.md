@@ -42,41 +42,6 @@ The program requires the following Python libraries:
 
 ---
 
-## 📁 **Project Files** 📁
-
-- **main.py** — The main program file.
-- **proxies.py** — The proxy handler script.
-- **proxy.py** — Contains a list of free proxies.
-- **requirements.txt** — A list of dependencies for installation via `pip`.
-- **.gitignore** — Git ignore file to exclude unnecessary files from the repository.
-
----
-
-## 📝 **How to Use** 📝
-
-1. **Launch the Program**: Run the program using the command `python main.py`.
-2. **Monitor Active Connections**: View a list of active network connections.
-3. **Use the Control Buttons**:
-   - **Refresh**: Refresh the list of active connections.
-   - **Kill All**: Terminate all active connections.
-   - **Netcards**: Open a window with information about your network cards.
-4. **View Detailed Connection Info**: Double-click on any connection in the list to view detailed information about it.
-
----
-
-## 🎥 **Example Usage** 🎥
-
-- The main window of the program displays the list of active connections.
-- The buttons are located at the bottom, allowing you to refresh the list, terminate connections, or check network card details.
-
----
-
-## ⚠️ **Notes** ⚠️
-
-1. An active internet connection is required for fetching IP details.
-2. You might need administrator privileges to terminate network-related processes.
-
----
 
 ## 👨‍💻 **Author** 👩‍💻
 
