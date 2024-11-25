@@ -1,4 +1,4 @@
-import psutil, socket, tkinter as tk, requests, random, threading
+import psutil, tkinter as tk, requests, random, threading
 from proxies import parse
 from proxy import free_proxies
 from fake_useragent import UserAgent
@@ -98,8 +98,9 @@ class InfoWindow:
         try:
             parse()
 
+            headers = {"User-Agent" : f"{UserAgent().random}"}
             proxy = {"http": random.choice(free_proxies)}
-            response = requests.get(f"https://ipinfo.io/{ip}/json", proxies=proxy)
+            response = requests.get(f"https://ipinfo.io/{ip}/json", proxies=proxy, headers=headers)
 
             if response.status_code == 200:
                 result = response.text
