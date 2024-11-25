@@ -8,26 +8,6 @@ Here's a well-formatted `README.md` in English with some special characters for 
 
 ---
 
-## ✨ **Features** ✨
-
-- **Active Connections Monitoring**  
-  View a list of active network connections, including remote and local IP addresses with ports.
-
-- **Refresh Button**  
-  The **Refresh** button updates the list of active connections in real-time.
-
-- **Kill All Connections**  
-  The **Kill All** button terminates all active network connections currently displayed.
-
-- **View Connection Info**  
-  Double-click on any connection in the list to open a new window showing detailed information about the IP.  
-  The program uses the [ipinfo.io](https://ipinfo.io) API to fetch IP details.
-
-- **Network Cards Info**  
-  The **Netcards** button opens a window displaying information about the network adapters on your machine.
-
----
-
 ## 🛠️ **Installation** 🛠️
 
 1. Clone the repository:
