@@ -13,7 +13,7 @@ Here's a well-formatted `README.md` in English with some special characters for 
 1. Clone the repository:
    ```bash
    git clone https://github.com/Fl1riX/Connection-monitor.git
-   cd Connection-Monitor
+   cd Connection-monitor
    ```
 
 2. Install the required dependencies:
