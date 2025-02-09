@@ -4,158 +4,157 @@ import requests
 import random
 import threading
 import logging
-import os
-import importlib.util
 from proxies import parse
-from fake_useragent import UserAgent
+from proxy import free_proxies
+from uas import UAS 
 
-logging.basicConfig(level=logging.INFO, filename="monitor_logs.log", filemode="a", encoding="utf-8")
-
-if not os.path.exists("proxy.py"):
-    logging.info("Файл proxy.py отсутствует, выполняется парсинг прокси...")
-    parse()
-else:
-    logging.info("Парсинг прокси")
-    parse()
-
-spec = importlib.util.spec_from_file_location("proxy", "proxy.py")
-proxy_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(proxy_module)
-free_proxies = proxy_module.free_proxies
+# Настройка логирования
+logging.basicConfig(
+    filename="monitor.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    encoding="utf-8"
+)
 
 class ConnectionMonitor:
-    @staticmethod
-    def get_active_connections():
-        connections = []
-        for conn in psutil.net_connections(kind="inet"):
-            if conn.status == "ESTABLISHED" and conn.raddr:
-                connections.append(conn)
-        logging.info(f"Получено {len(connections)} активных соединений")
-        return connections
+    """Главное окно программы для мониторинга соединений."""
 
-    @staticmethod
-    def kill_connection(ip):
-        for conn in psutil.net_connections(kind="inet"):
-            if conn.raddr and conn.raddr.ip == ip:
-                try:
-                    if conn.pid:
-                        process = psutil.Process(conn.pid)
-                        process.terminate()
-                        logging.info(f"Соединение с {ip} завершено")
-                except Exception as e:
-                    logging.error(f"Ошибка при завершении соединения {ip}: {e}")
-
-    @staticmethod
-    def kill_all_connections():
-        for conn in psutil.net_connections(kind="inet"):
-            try:
-                if conn.pid:
-                    process = psutil.Process(conn.pid)
-                    process.terminate()
-            except Exception as e:
-                logging.error(f"Ошибка при завершении процесса: {e}")
-
-class MainWin:
-    def __init__(self):
-        self.connections = ConnectionMonitor.get_active_connections()
-        self.cons = []
-
+    def __init__(self) -> None:
         self.win = tk.Tk()
         self.win.title("Connection Monitor")
         self.win.geometry("800x500+230+200")
-        self.win.resizable(False, False)
+        self.win.resizable(0, 0)
 
+        self.connections = []
+        self.cons_var = tk.StringVar(value=self.connections)
+
+        self.create_widgets()
+        self.update_connections()
+
+        logging.info("Запущен Connection Monitor")
+        self.win.mainloop()
+
+    def create_widgets(self):
+        """Создаёт интерфейсные элементы."""
+
+        # Фрейм для списка соединений
         self.frame = tk.Frame(self.win)
         self.frame.grid(row=0, column=0, sticky="nsew")
 
+        # Список соединений
+        self.listbox = tk.Listbox(self.frame, listvariable=self.cons_var, height=25, width=129)
+        self.listbox.grid(row=0, column=0, sticky="nsew")
+        self.listbox.bind("<Double-Button-1>", self.show_info_window)
+
+        # Скроллбар для списка
+        self.scrollbar = tk.Scrollbar(self.frame, orient="vertical", command=self.listbox.yview)
+        self.scrollbar.grid(row=0, column=1, sticky="ns")
+        self.listbox.config(yscrollcommand=self.scrollbar.set)
+
+        # Фрейм с кнопками
         self.bt_frame = tk.Frame(self.win)
         self.bt_frame.grid(row=1, column=0, pady=10)
 
-        self.cons_var = tk.StringVar(value=self.cons)
-        self.listbox = tk.Listbox(self.frame, listvariable=self.cons_var, height=25, width=129)
-        self.listbox.grid(row=0, column=0, sticky="nsew")
-
-        self.scrollbar = tk.Scrollbar(self.frame, orient="vertical", command=self.listbox.yview)
-        self.scrollbar.grid(row=0, column=1, sticky="wnse")
-
-        self.listbox.config(yscrollcommand=self.scrollbar.set)
-        self.listbox.bind("<Double-Button-1>", self.show_info_window)
-
-        self.refresh_bt = tk.Button(self.bt_frame, text="Refresh", command=self.update_connections)
-        self.refresh_bt.grid(row=1, column=0, pady=10)
-
-        self.kill_all_bt = tk.Button(self.bt_frame, text="Kill All", command=ConnectionMonitor.kill_all_connections)
-        self.kill_all_bt.grid(row=1, column=1, pady=10, padx=5)
-
-        self.nc_bt = tk.Button(self.bt_frame, text="Netcards", command=self.open_netcards_info)
-        self.nc_bt.grid(row=1, column=2, pady=10)
+        # Кнопки управления
+        tk.Button(self.bt_frame, text="Refresh", command=self.update_connections).grid(row=1, column=0, pady=10)
+        tk.Button(self.bt_frame, text="Kill all", command=self.kill_all_connections).grid(row=1, column=1, pady=10, padx=5)
+        tk.Button(self.bt_frame, text="Netcards", command=NetcardsInfo).grid(row=1, column=2, pady=10)
 
         self.win.grid_rowconfigure(0, weight=1)
         self.win.grid_columnconfigure(0, weight=1)
 
-        self.update_connections()
-        self.win.mainloop()
-
     def update_connections(self):
-        self.cons.clear()
-        self.connections = ConnectionMonitor.get_active_connections()
-        for conn in self.connections:
-            self.cons.append(f"Remote: {conn.raddr.ip}:{conn.raddr.port} | Local: {conn.laddr.ip}:{conn.laddr.port}")
-        self.cons_var.set(self.cons)
-        logging.info("Список соединений обновлен")
+        """Обновляет список активных соединений."""
+        self.connections.clear()
+        for conn in psutil.net_connections(kind="inet"):
+            if conn.status == "ESTABLISHED" and conn.raddr:
+                self.connections.append(f"Remote: {conn.raddr.ip}:{conn.raddr.port} | Local: {conn.laddr.ip}:{conn.laddr.port}")
+        self.cons_var.set(self.connections)
+        logging.info(f"Обновлено {len(self.connections)} соединений")
+
+    def kill_all_connections(self):
+        """Прерывает все активные соединения."""
+        for conn in psutil.net_connections(kind="inet"):
+            if conn.pid:
+                try:
+                    psutil.Process(conn.pid).terminate()
+                    logging.info(f"Процесс {conn.pid} завершён")
+                except Exception as e:
+                    logging.error(f"Ошибка при завершении процесса {conn.pid}: {e}")
 
     def show_info_window(self, event):
-        selection = self.listbox.curselection()
-        if selection:
-            selected_conn = self.listbox.get(selection)
-            threading.Thread(target=InfoWindow, args=(selected_conn,)).start()
+        """Открывает окно с информацией о соединении."""
+        selected = self.listbox.curselection()
+        if selected:
+            ip_info = self.listbox.get(selected)
+            threading.Thread(target=InfoWindow, args=(ip_info,)).start()
 
-    def open_netcards_info(self):
-        NetcardsInfo()
 
 class InfoWindow:
-    def __init__(self, connection_str):
+    """Окно информации о соединении и удалённом IP."""
+
+    def __init__(self, ip_info):
         self.wind = tk.Toplevel()
-        self.wind.geometry('500x255+1030+300')
-        self.wind.resizable(False, False)
+        self.wind.geometry("500x255+1030+300")
+        self.wind.resizable(0, 0)
 
-        ip = connection_str.split("|")[0].split("Remote: ")[1].split(":")[0]
-        self.wind.title(ip)
+        remote_info = ip_info.split("|")[0].replace("Remote: ", "")
+        self.ip, self.port = remote_info.split(":")
+        self.wind.title(self.ip)
 
-        self.kill_connection_bt = tk.Button(self.wind, text="Kill Connection",
-                                            command=lambda: ConnectionMonitor.kill_connection(ip))
-        self.kill_connection_bt.grid(column=0, row=1)
+        tk.Button(self.wind, text="Kill connection", command=self.kill_connection).grid(column=0, row=1)
 
-        self.ip_inf = tk.Text(self.wind, height=10, width=62)
-        self.ip_inf.grid(column=0, row=0)
+        self.ip_info_text = tk.Text(self.wind, height=10, width=62)
+        self.ip_info_text.grid(column=0, row=0)
 
-        self.parse_ip_info(ip)
+        self.get_ip_info()
 
-    def parse_ip_info(self, ip):
+    def get_ip_info(self):
+        """Запрашивает информацию об IP через API."""
         try:
-            headers = {"User-Agent": UserAgent().random}
+            parse()
+            headers = {"User-Agent": random.choice(UAS)}
             proxy = {"http": random.choice(free_proxies)}
-            response = requests.get(f"https://ipinfo.io/{ip}/json", proxies=proxy, headers=headers)
+
+            response = requests.get(f"https://ipinfo.io/{self.ip}/json", proxies=proxy, headers=headers)
 
             if response.status_code == 200:
-                result = response.text
-                self.ip_inf.insert("1.0", f"IP Info: {result}\n")
-                logging.info(f"Информация по IP {ip} успешно получена")
+                self.ip_info_text.insert("1.0", f"IP Info: {response.text}\n")
+                logging.info(f"Получена информация об IP {self.ip}")
+            else:
+                logging.warning(f"Ошибка при запросе IP {self.ip}: {response.status_code}")
+
         except Exception as e:
-            logging.error(f"Ошибка при запросе к IPInfo: {e}")
+            logging.error(f"Ошибка при получении информации об IP {self.ip}: {e}")
+
+    def kill_connection(self):
+        """Завершает соединение с указанным IP."""
+        try:
+            for conn in psutil.net_connections(kind="inet"):
+                if conn.raddr and conn.raddr.ip == self.ip:
+                    if conn.pid:
+                        psutil.Process(conn.pid).terminate()
+                        logging.info(f"Соединение с {self.ip} завершено (PID {conn.pid})")
+                        break
+        except Exception as e:
+            logging.error(f"Ошибка при завершении соединения с {self.ip}: {e}")
+
 
 class NetcardsInfo:
+    """Окно с информацией о сетевых интерфейсах."""
+
     def __init__(self):
         self.net_card_win = tk.Toplevel()
         self.net_card_win.geometry("700x450")
-        self.net_card_win.resizable(False, False)
+        self.net_card_win.resizable(0, 0)
         self.net_card_win.title("Netcards Info")
 
         self.info_text = tk.Text(self.net_card_win, height=27, width=86)
         self.info_text.grid(column=0, row=0)
+
         self.info_text.insert("1.0", str(psutil.net_if_addrs()))
-        logging.info("Открыто окно информации о сетевых картах")
+        logging.info("Открыто окно информации о сетевых интерфейсах")
+
 
 if __name__ == "__main__":
-    logging.info("Запуск Connection Monitor")
-    MainWin()
+    ConnectionMonitor()
