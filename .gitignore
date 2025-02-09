@@ -1,4 +1,6 @@
 old version/
 .venv/
 __pycache__/
--onnection-Monitor/
+new gui.py
+proxy.py
+*.log
