@@ -1,6 +1,5 @@
 psutil
 requests
 beautifulsoup4
-fake-useragent
 PyQt5
 tk
