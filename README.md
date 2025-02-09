@@ -10,8 +10,7 @@
 ## 🔧 Функционал  
 ✅ Отображение активных интернет-соединений  
 ✅ Возможность завершения всех соединений  
-✅ Получение информации по удалённым IP  
-✅ Парсинг бесплатных прокси  
+✅ Получение информации по удалённым IP
 
 ---
 
@@ -65,7 +64,6 @@ This project was more of an experiment, and I probably won’t return to it. If 
 ✅ Displays active internet connections  
 ✅ Allows termination of all connections  
 ✅ Retrieves information about remote IPs  
-✅ Parses free proxy lists  
 
 ---  
 
