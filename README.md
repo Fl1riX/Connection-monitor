@@ -31,7 +31,8 @@
 - `proxy.py` — файл со списком прокси (обновляется автоматически)  
 - `proxies.py` — парсер бесплатных прокси  
 - `requirements.txt` — список зависимостей  
-- `README.md` — этот файл  
+- `output` - содержит .exe файл этого проекта
+- `README.md` — этот файл
 
 ---
 
@@ -83,7 +84,8 @@ This project was more of an experiment, and I probably won’t return to it. If 
 - `main.py` — main application code  
 - `proxy.py` — proxy list file (updates automatically)  
 - `proxies.py` — free proxy parser  
-- `requirements.txt` — dependency list  
+- `requirements.txt` — dependency list
+- `output` - contains the .exe file of this project 
 - `README.md` — this file  
 
 ---  
